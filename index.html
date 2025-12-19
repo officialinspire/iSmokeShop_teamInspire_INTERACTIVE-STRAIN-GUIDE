@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iSmokeShop - Interactive Strain Guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="title">🌿 iSmokeShop Strain Guide</h1>
+            <p class="subtitle">Explore the Lineage & Legacy</p>
+        </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="control-group">
+            <button class="control-btn" id="zoomIn">➕ Zoom In</button>
+            <button class="control-btn" id="zoomOut">➖ Zoom Out</button>
+            <button class="control-btn" id="resetView">🔄 Reset View</button>
+        </div>
+        <div class="control-group">
+            <input type="text" id="searchInput" placeholder="🔍 Search strains..." class="search-input">
+            <select id="filterType" class="filter-select">
+                <option value="all">All Types</option>
+                <option value="indica">Indica</option>
+                <option value="sativa">Sativa</option>
+                <option value="hybrid">Hybrid</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Canvas Container -->
+    <div class="canvas-container" id="canvasContainer">
+        <canvas id="strainCanvas"></canvas>
+        
+        <!-- Strain Cards will be positioned absolutely -->
+        <div id="strainCards"></div>
+    </div>
+
+    <!-- Strain Detail Modal -->
+    <div class="modal" id="strainModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div class="modal-header">
+                <img id="modalImage" src="" alt="Strain" class="modal-image">
+                <div class="modal-title-section">
+                    <h2 id="modalName" class="modal-name"></h2>
+                    <span id="modalType" class="modal-type"></span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>🧬 Genetics</h3>
+                    <p id="modalGenetics"></p>
+                </div>
+                <div class="modal-section">
+                    <h3>✨ Effects</h3>
+                    <p id="modalEffects"></p>
+                </div>
+                <div class="modal-section">
+                    <h3>🌱 Growing Info</h3>
+                    <p id="modalGrowing"></p>
+                </div>
+                <div class="modal-section fun-facts">
+                    <h3>💡 Fun Facts & Legacy</h3>
+                    <p id="modalFunFacts"></p>
+                </div>
+                <div class="modal-lineage" id="modalLineage">
+                    <h3>🔗 Lineage Connection</h3>
+                    <div id="lineageInfo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <h3>Legend</h3>
+        <div class="legend-item">
+            <span class="legend-color indica-color"></span>
+            <span>Indica</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color sativa-color"></span>
+            <span>Sativa</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color hybrid-color"></span>
+            <span>Hybrid</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made by <strong>#teamInspire</strong> in collaboration with <strong>iSmokeShop</strong></p>
+        <p class="footer-link">Visit us at <a href="https://www.ismokeshop.net" target="_blank">www.ismokeshop.net</a></p>
+    </footer>
+
+    <script src="index.js"></script>
+</body>
+</html>
