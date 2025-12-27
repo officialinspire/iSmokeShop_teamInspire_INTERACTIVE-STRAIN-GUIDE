@@ -264,12 +264,18 @@ class StrainGuide {
         this.searchTerm = '';
         this.filterType = 'all';
         this.cardScale = 1;
+        this.viewScale = 1;
+        this.pan = { x: 0, y: 0 };
         this.connections = [];
         this.relationships = this.buildRelationships();
         this.highlightedStrains = new Set();
         this.highlightedConnection = null;
         this.activeModalStrain = null;
         this.modalGalleryIndex = 0;
+        this.activePointers = new Map();
+        this.lastPinchDistance = null;
+        this.panAnchor = { x: 0, y: 0 };
+        this.pointerStart = { x: 0, y: 0 };
 
         this.init();
     }
@@ -302,12 +308,12 @@ class StrainGuide {
     getLayoutConfig() {
         const width = this.container.getBoundingClientRect().width;
         if (width < 720) {
-            return { padding: 120, verticalSpacing: 200, horizontalSpacing: 180 };
+            return { padding: 140, verticalSpacing: 230, horizontalSpacing: 200 };
         }
         if (width < 1040) {
-            return { padding: 140, verticalSpacing: 220, horizontalSpacing: 210 };
+            return { padding: 170, verticalSpacing: 240, horizontalSpacing: 230 };
         }
-        return { padding: 160, verticalSpacing: 220, horizontalSpacing: 240 };
+        return { padding: 190, verticalSpacing: 250, horizontalSpacing: 250 };
     }
 
     resizeCanvas() {
@@ -364,22 +370,36 @@ class StrainGuide {
         this.strainCardsContainer.innerHTML = '';
         this.strainPositions.forEach(pos => {
             const card = document.createElement('div');
-            card.className = `strain-card ${pos.strain.type}`;
+            card.className = `strain-card ${pos.strain.type} collapsed`;
             const initialImage = pos.strain.imageGallery?.[0] || { src: placeholderImage, label: 'Lineage' };
             card.innerHTML = `
-                <div class="strain-card-image">
+                <div class="strain-card-body">
+                    <div class="strain-card-icon">${pos.strain.icon}</div>
+                    <div class="strain-card-name">${pos.strain.name}</div>
+                    <span class="strain-card-type">${pos.strain.type}</span>
+                </div>
+                <div class="strain-card-image" aria-hidden="true">
                     <button class="card-image-nav prev" aria-label="Previous photo">◀</button>
                     <img src="${initialImage.src}" alt="${pos.strain.name}" data-index="0">
                     <button class="card-image-nav next" aria-label="Next photo">▶</button>
                     <div class="image-label">${initialImage.label}</div>
                 </div>
-                <div class="strain-card-icon">${pos.strain.icon}</div>
-                <div class="strain-card-name">${pos.strain.name}</div>
-                <span class="strain-card-type">${pos.strain.type}</span>
+                <div class="strain-card-actions">
+                    <button class="card-toggle" type="button">Show Photos</button>
+                    <button class="card-open" type="button">Open Details</button>
+                </div>
             `;
 
             this.updateCardPosition(card, pos);
-            card.addEventListener('click', () => this.openStrainModal(pos.strain));
+            card.querySelector('.card-open').addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.openStrainModal(pos.strain);
+            });
+            card.querySelector('.card-toggle').addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.toggleCardExpansion(card);
+            });
+            card.addEventListener('dblclick', () => this.openStrainModal(pos.strain));
             card.addEventListener('mouseenter', () => this.highlightByStrain(pos.strain.id));
             card.addEventListener('mouseleave', () => this.clearHighlights());
             this.setupCardGallery(card, pos.strain);
@@ -387,6 +407,7 @@ class StrainGuide {
             this.strainCardsContainer.appendChild(card);
             pos.element = card;
         });
+        this.updateLayerTransforms();
         this.updateCardHighlights();
     }
 
@@ -402,6 +423,15 @@ class StrainGuide {
             halfWidth: (width * scale) / 2,
             halfHeight: (height * scale) / 2
         };
+    }
+
+    toggleCardExpansion(card) {
+        const isCollapsed = card.classList.contains('collapsed');
+        card.classList.toggle('collapsed');
+        const toggleButton = card.querySelector('.card-toggle');
+        if (toggleButton) {
+            toggleButton.textContent = isCollapsed ? 'Hide Photos' : 'Show Photos';
+        }
     }
 
     setupCardGallery(card, strain) {
@@ -441,7 +471,11 @@ class StrainGuide {
     }
 
     drawConnections() {
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.save();
+        this.ctx.translate(this.pan.x, this.pan.y);
+        this.ctx.scale(this.viewScale, this.viewScale);
         const metrics = this.getCardMetrics();
         this.connections = [];
 
@@ -458,6 +492,7 @@ class StrainGuide {
                 this.connections.push(connection);
             });
         });
+        this.ctx.restore();
     }
 
     drawConnection(from, to, type, metrics, highlighted) {
@@ -557,13 +592,25 @@ class StrainGuide {
 
         document.getElementById('modalImagePrev').addEventListener('click', () => this.navigateModalGallery(-1));
         document.getElementById('modalImageNext').addEventListener('click', () => this.navigateModalGallery(1));
+
+        this.container.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
+        this.container.addEventListener('pointermove', (e) => this.handlePointerMove(e));
+        this.container.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+        this.container.addEventListener('pointercancel', (e) => this.handlePointerUp(e));
+        this.container.addEventListener('wheel', (e) => this.handleWheelZoom(e), { passive: false });
     }
 
     adjustScale(delta) {
-        const nextScale = Math.min(1.15, Math.max(0.85, this.cardScale + delta));
-        this.cardScale = parseFloat(nextScale.toFixed(2));
-        document.documentElement.style.setProperty('--card-scale', this.cardScale);
+        const nextScale = Math.min(1.5, Math.max(0.7, this.viewScale + delta));
+        this.viewScale = parseFloat(nextScale.toFixed(3));
+        document.documentElement.style.setProperty('--card-scale', 1);
+        this.updateLayerTransforms();
         this.redraw();
+    }
+
+    updateLayerTransforms() {
+        const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.viewScale})`;
+        this.strainCardsContainer.style.transform = transform;
     }
 
     handleCanvasHover(event) {
@@ -586,9 +633,74 @@ class StrainGuide {
         }
     }
 
+    handlePointerDown(event) {
+        if (event.target.closest('.card-open, .card-toggle, .card-image-nav')) {
+            return;
+        }
+        this.container.setPointerCapture(event.pointerId);
+        this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (this.activePointers.size === 1) {
+            this.panAnchor = { ...this.pan };
+            this.pointerStart = { x: event.clientX, y: event.clientY };
+        }
+        if (this.activePointers.size === 2) {
+            this.lastPinchDistance = this.getPinchDistance();
+        }
+    }
+
+    handlePointerMove(event) {
+        if (!this.activePointers.has(event.pointerId)) return;
+        this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (this.activePointers.size === 1) {
+            const deltaX = event.clientX - this.pointerStart.x;
+            const deltaY = event.clientY - this.pointerStart.y;
+            this.pan = { x: this.panAnchor.x + deltaX, y: this.panAnchor.y + deltaY };
+            this.updateLayerTransforms();
+            this.drawConnections();
+        }
+
+        if (this.activePointers.size === 2) {
+            const pinchDistance = this.getPinchDistance();
+            if (this.lastPinchDistance) {
+                const delta = (pinchDistance - this.lastPinchDistance) / 300;
+                this.adjustScale(delta);
+            }
+            this.lastPinchDistance = pinchDistance;
+        }
+    }
+
+    handlePointerUp(event) {
+        if (this.container.hasPointerCapture(event.pointerId)) {
+            this.container.releasePointerCapture(event.pointerId);
+        }
+        this.activePointers.delete(event.pointerId);
+        if (this.activePointers.size < 2) {
+            this.lastPinchDistance = null;
+        }
+    }
+
+    handleWheelZoom(event) {
+        event.preventDefault();
+        const delta = -event.deltaY / 600;
+        this.adjustScale(delta);
+    }
+
+    getPinchDistance() {
+        const points = Array.from(this.activePointers.values());
+        if (points.length < 2) return null;
+        const [p1, p2] = points;
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     getCanvasPoint(event) {
         const rect = this.canvas.getBoundingClientRect();
-        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+        return {
+            x: (event.clientX - rect.left - this.pan.x) / this.viewScale,
+            y: (event.clientY - rect.top - this.pan.y) / this.viewScale
+        };
     }
 
     findConnectionNearPoint(point, threshold = 12) {
@@ -627,10 +739,13 @@ class StrainGuide {
 
     resetView() {
         this.cardScale = 1;
-        document.documentElement.style.setProperty('--card-scale', this.cardScale);
+        this.viewScale = 1;
+        this.pan = { x: 0, y: 0 };
+        document.documentElement.style.setProperty('--card-scale', 1);
         this.calculateStrainPositions();
         this.createStrainCards();
         this.clearHighlights();
+        this.updateLayerTransforms();
         this.redraw();
     }
 
@@ -638,6 +753,7 @@ class StrainGuide {
         this.calculateStrainPositions();
         this.createStrainCards();
         this.clearHighlights();
+        this.updateLayerTransforms();
         this.redraw();
     }
 
@@ -668,6 +784,7 @@ class StrainGuide {
     }
 
     redraw() {
+        this.updateLayerTransforms();
         this.drawConnections();
         this.strainPositions.forEach(pos => {
             this.updateCardPosition(pos.element, pos);
