@@ -105,19 +105,19 @@ const strainsData = [
         genetics: "Afghani × Thai",
         effects: "Deeply relaxing, sedating, euphoric. Perfect for insomnia and pain relief.",
         growing: "6-8 weeks flowering. Very easy. Compact and resilient.",
-        funFacts: "Northern Lights emerged in Washington State in the 1970s and was refined in the Netherlands. It has won numerous Cannabis Cups and is one of the most awarded strains ever. NL genetics are in countless modern indicas. Sensi Seeds popularized this strain, making it a global legend. Perfect for hash production!",
+        funFacts: "Northern Lights is one of the most famous indicas of all time. Bred in the Pacific Northwest and popularized in Amsterdam, it shaped modern indica breeding and is featured by countless brands worldwide.",
         image: "https://via.placeholder.com/300x200/8b5cf6/ffffff?text=Northern+Lights"
     },
     {
         id: 10,
         name: "Jack Herer",
         type: "sativa",
-        icon: "👨",
-        parents: [7, 9],
-        genetics: "Haze × (Northern Lights × Shiva Skunk)",
-        effects: "Clear-headed, creative, euphoric, energetic. Excellent focus and motivation.",
-        growing: "8-10 weeks flowering. Moderate difficulty. Indoor and outdoor friendly.",
-        funFacts: "Named after legendary cannabis activist Jack Herer. Developed by Sensi Seeds in the 1990s. Won numerous Cannabis Cups and is considered one of the finest medicinal strains. Jack's activism and this strain both helped change cannabis laws worldwide. Available from almost every major seed bank and beloved by Dutch coffee shops.",
+        icon: "📜",
+        parents: [6, 7],
+        genetics: "Haze × (Northern Lights #5 × Shiva Skunk)",
+        effects: "Energetic, clear-headed, creative. Perfect daytime strain.",
+        growing: "8-9 weeks flowering. Moderate difficulty. Tall and resinous.",
+        funFacts: "Named after famed cannabis activist Jack Herer, author of 'The Emperor Wears No Clothes'. This strain has won numerous awards and is beloved for its uplifting effects. Popular with brands and dispensaries worldwide.",
         image: "https://via.placeholder.com/300x200/f97316/ffffff?text=Jack+Herer"
     },
     {
@@ -146,42 +146,39 @@ const strainsData = [
     }
 ];
 
-// Canvas and Interaction Setup
 class StrainGuide {
     constructor() {
         this.canvas = document.getElementById('strainCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.container = document.getElementById('canvasContainer');
         this.strainCardsContainer = document.getElementById('strainCards');
-        
-        // Canvas state
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.scale = 1;
-        this.isDragging = false;
-        this.dragStartX = 0;
-        this.dragStartY = 0;
-        
-        // Strain positions
-        this.strainPositions = [];
-        
-        // Filters
+
         this.searchTerm = '';
         this.filterType = 'all';
-        
+        this.cardScale = 1;
+
         this.init();
     }
-    
+
     init() {
-        this.resizeCanvas();
         this.calculateStrainPositions();
         this.createStrainCards();
         this.drawConnections();
         this.setupEventListeners();
-        
         window.addEventListener('resize', () => this.handleResize());
     }
-    
+
+    getLayoutConfig() {
+        const width = this.container.getBoundingClientRect().width;
+        if (width < 720) {
+            return { padding: 140, verticalSpacing: 200, horizontalSpacing: 180 };
+        }
+        if (width < 1040) {
+            return { padding: 170, verticalSpacing: 220, horizontalSpacing: 210 };
+        }
+        return { padding: 200, verticalSpacing: 240, horizontalSpacing: 240 };
+    }
+
     resizeCanvas() {
         const rect = this.container.getBoundingClientRect();
         this.canvas.width = rect.width;
@@ -189,19 +186,14 @@ class StrainGuide {
         this.canvasWidth = rect.width;
         this.canvasHeight = rect.height;
     }
-    
+
     calculateStrainPositions() {
-        const padding = 200;
-        const verticalSpacing = 250;
-        const horizontalSpacing = 250;
-        
-        // Group strains by generation/level
-        const levels = {
-            0: [], // Parent strains (no parents)
-            1: [], // First generation
-            2: []  // Second generation and beyond
-        };
-        
+        this.resizeCanvas();
+        this.strainPositions = [];
+        const { padding, verticalSpacing, horizontalSpacing } = this.getLayoutConfig();
+
+        const levels = { 0: [], 1: [], 2: [] };
+
         strainsData.forEach(strain => {
             if (strain.parents.length === 0) {
                 levels[0].push(strain);
@@ -214,28 +206,26 @@ class StrainGuide {
                 levels[2].push(strain);
             }
         });
-        
-        // Calculate positions for each level
+
         Object.keys(levels).forEach(level => {
             const strains = levels[level];
             const levelY = padding + (parseInt(level) * verticalSpacing);
             const totalWidth = (strains.length - 1) * horizontalSpacing;
             const startX = (this.canvasWidth - totalWidth) / 2;
-            
+
             strains.forEach((strain, index) => {
                 this.strainPositions.push({
                     id: strain.id,
                     x: startX + (index * horizontalSpacing),
                     y: levelY,
-                    strain: strain
+                    strain
                 });
             });
         });
     }
-    
+
     createStrainCards() {
         this.strainCardsContainer.innerHTML = '';
-        
         this.strainPositions.forEach(pos => {
             const card = document.createElement('div');
             card.className = `strain-card ${pos.strain.type}`;
@@ -244,189 +234,164 @@ class StrainGuide {
                 <div class="strain-card-name">${pos.strain.name}</div>
                 <span class="strain-card-type">${pos.strain.type}</span>
             `;
-            
+
             this.updateCardPosition(card, pos);
-            
             card.addEventListener('click', () => this.openStrainModal(pos.strain));
-            
+
             this.strainCardsContainer.appendChild(card);
             pos.element = card;
         });
     }
-    
+
+    getCardMetrics() {
+        const styles = getComputedStyle(document.documentElement);
+        const width = parseFloat(styles.getPropertyValue('--card-width')) || 160;
+        const height = parseFloat(styles.getPropertyValue('--card-height')) || 150;
+        const scale = this.cardScale;
+        return {
+            width,
+            height,
+            scale,
+            halfWidth: (width * scale) / 2,
+            halfHeight: (height * scale) / 2
+        };
+    }
+
     updateCardPosition(card, pos) {
-        const x = pos.x * this.scale + this.offsetX - 70; // 70 is half card width
-        const y = pos.y * this.scale + this.offsetY - 60; // Approximate half card height
-        
+        const metrics = this.getCardMetrics();
+        const x = pos.x - metrics.halfWidth;
+        const y = pos.y - metrics.halfHeight;
         card.style.left = `${x}px`;
         card.style.top = `${y}px`;
-        card.style.transform = `scale(${this.scale})`;
     }
-    
+
     drawConnections() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        this.ctx.save();
-        this.ctx.translate(this.offsetX, this.offsetY);
-        this.ctx.scale(this.scale, this.scale);
-        
-        // Draw connections between parents and children
+        const metrics = this.getCardMetrics();
+
         this.strainPositions.forEach(childPos => {
-            if (childPos.strain.parents.length > 0) {
-                childPos.strain.parents.forEach(parentId => {
-                    const parentPos = this.strainPositions.find(p => p.id === parentId);
-                    if (parentPos) {
-                        this.drawConnection(parentPos, childPos, childPos.strain.type);
-                    }
-                });
-            }
+            const childVisible = childPos.element && childPos.element.style.display !== 'none';
+            if (!childVisible || childPos.strain.parents.length === 0) return;
+
+            childPos.strain.parents.forEach(parentId => {
+                const parentPos = this.strainPositions.find(p => p.id === parentId);
+                const parentVisible = parentPos && parentPos.element && parentPos.element.style.display !== 'none';
+                if (!parentPos || !parentVisible) return;
+                this.drawConnection(parentPos, childPos, childPos.strain.type, metrics);
+            });
         });
-        
-        this.ctx.restore();
     }
-    
-    drawConnection(from, to, type) {
+
+    drawConnection(from, to, type, metrics) {
         const colors = {
-            indica: '#8b5cf6',
-            sativa: '#f97316',
-            hybrid: '#10b981'
+            indica: '#b08cff',
+            sativa: '#f2a65a',
+            hybrid: '#45c4b0'
         };
-        
-        this.ctx.strokeStyle = colors[type] || '#4a7c28';
-        this.ctx.lineWidth = 3;
-        this.ctx.setLineDash([10, 5]);
-        
+
+        this.ctx.strokeStyle = colors[type] || '#6fbf73';
+        this.ctx.lineWidth = 4;
+        this.ctx.lineCap = 'round';
+        this.ctx.setLineDash([6, 8]);
+
         this.ctx.beginPath();
-        this.ctx.moveTo(from.x, from.y + 60);
-        
-        // Draw curved connection
+        this.ctx.moveTo(from.x, from.y + metrics.halfHeight);
+
         const midY = (from.y + to.y) / 2;
         this.ctx.bezierCurveTo(
-            from.x, midY,
-            to.x, midY,
-            to.x, to.y - 60
+            from.x,
+            midY,
+            to.x,
+            midY,
+            to.x,
+            to.y - metrics.halfHeight
         );
-        
+
         this.ctx.stroke();
         this.ctx.setLineDash([]);
     }
-    
+
     setupEventListeners() {
-        // Zoom controls
-        document.getElementById('zoomIn').addEventListener('click', () => this.zoom(1.2));
-        document.getElementById('zoomOut').addEventListener('click', () => this.zoom(0.8));
+        document.getElementById('zoomIn').addEventListener('click', () => this.adjustScale(0.08));
+        document.getElementById('zoomOut').addEventListener('click', () => this.adjustScale(-0.08));
         document.getElementById('resetView').addEventListener('click', () => this.resetView());
-        
-        // Pan controls
-        this.container.addEventListener('mousedown', (e) => this.startDrag(e));
-        this.container.addEventListener('mousemove', (e) => this.drag(e));
-        this.container.addEventListener('mouseup', () => this.endDrag());
-        this.container.addEventListener('mouseleave', () => this.endDrag());
-        
-        // Touch controls
-        this.container.addEventListener('touchstart', (e) => this.startDrag(e.touches[0]));
-        this.container.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            this.drag(e.touches[0]);
-        });
-        this.container.addEventListener('touchend', () => this.endDrag());
-        
-        // Search and filter
+
         document.getElementById('searchInput').addEventListener('input', (e) => this.handleSearch(e));
         document.getElementById('filterType').addEventListener('change', (e) => this.handleFilter(e));
-        
-        // Modal
+
         document.getElementById('modalClose').addEventListener('click', () => this.closeModal());
         document.getElementById('strainModal').addEventListener('click', (e) => {
             if (e.target.id === 'strainModal') this.closeModal();
         });
     }
-    
-    zoom(factor) {
-        const newScale = this.scale * factor;
-        if (newScale >= 0.5 && newScale <= 3) {
-            this.scale = newScale;
-            this.redraw();
-        }
+
+    adjustScale(delta) {
+        const nextScale = Math.min(1.15, Math.max(0.85, this.cardScale + delta));
+        this.cardScale = parseFloat(nextScale.toFixed(2));
+        document.documentElement.style.setProperty('--card-scale', this.cardScale);
+        this.redraw();
     }
-    
+
     resetView() {
-        this.scale = 1;
-        this.offsetX = 0;
-        this.offsetY = 0;
+        this.cardScale = 1;
+        document.documentElement.style.setProperty('--card-scale', this.cardScale);
+        this.calculateStrainPositions();
+        this.createStrainCards();
         this.redraw();
     }
-    
-    startDrag(e) {
-        this.isDragging = true;
-        this.dragStartX = e.clientX - this.offsetX;
-        this.dragStartY = e.clientY - this.offsetY;
-    }
-    
-    drag(e) {
-        if (this.isDragging) {
-            this.offsetX = e.clientX - this.dragStartX;
-            this.offsetY = e.clientY - this.dragStartY;
-            this.redraw();
-        }
-    }
-    
-    endDrag() {
-        this.isDragging = false;
-    }
-    
+
     handleResize() {
-        this.resizeCanvas();
+        this.calculateStrainPositions();
+        this.createStrainCards();
         this.redraw();
     }
-    
+
     handleSearch(e) {
         this.searchTerm = e.target.value.toLowerCase();
         this.filterStrains();
     }
-    
+
     handleFilter(e) {
         this.filterType = e.target.value;
         this.filterStrains();
     }
-    
+
     filterStrains() {
         this.strainPositions.forEach(pos => {
             const matchesSearch = pos.strain.name.toLowerCase().includes(this.searchTerm);
             const matchesType = this.filterType === 'all' || pos.strain.type === this.filterType;
-            
+
             if (matchesSearch && matchesType) {
                 pos.element.style.display = 'block';
             } else {
                 pos.element.style.display = 'none';
             }
         });
-        
+
         this.drawConnections();
     }
-    
+
     redraw() {
         this.drawConnections();
         this.strainPositions.forEach(pos => {
             this.updateCardPosition(pos.element, pos);
         });
     }
-    
+
     openStrainModal(strain) {
         const modal = document.getElementById('strainModal');
-        
+
         document.getElementById('modalName').textContent = strain.name;
         document.getElementById('modalImage').src = strain.image;
         document.getElementById('modalType').textContent = strain.type;
         document.getElementById('modalType').className = `modal-type ${strain.type}`;
         document.getElementById('modalType').style.background = this.getTypeColor(strain.type);
-        
+
         document.getElementById('modalGenetics').textContent = strain.genetics;
         document.getElementById('modalEffects').textContent = strain.effects;
         document.getElementById('modalGrowing').textContent = strain.growing;
         document.getElementById('modalFunFacts').textContent = strain.funFacts;
-        
-        // Show lineage
+
         const lineageDiv = document.getElementById('lineageInfo');
         if (strain.parents.length > 0) {
             lineageDiv.innerHTML = '';
@@ -447,28 +412,27 @@ class StrainGuide {
         } else {
             document.getElementById('modalLineage').style.display = 'none';
         }
-        
+
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
-    
+
     closeModal() {
         const modal = document.getElementById('strainModal');
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
     }
-    
+
     getTypeColor(type) {
         const colors = {
-            indica: '#8b5cf6',
-            sativa: '#f97316',
-            hybrid: '#10b981'
+            indica: '#b08cff',
+            sativa: '#f2a65a',
+            hybrid: '#45c4b0'
         };
-        return colors[type] || '#4a7c28';
+        return colors[type] || '#6fbf73';
     }
 }
 
-// Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new StrainGuide();
+    new StrainGuide();
 });
