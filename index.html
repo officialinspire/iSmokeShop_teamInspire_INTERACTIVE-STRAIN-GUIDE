@@ -9,10 +9,18 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <img src="cannabis-strain-guide-title-card.png" alt="Interactive Strain Guide" class="hero-banner">
-        <div class="header-content">
-            <h1 class="title">🌿 iSmokeShop Strain Guide</h1>
-            <p class="subtitle">Explore the Lineage & Legacy</p>
+        <div class="header-inner">
+            <img src="cannabis-strain-guide-title-card.png" alt="Interactive Strain Guide" class="hero-banner">
+            <div class="header-content">
+                <h1 class="title">🌿 iSmokeShop Strain Guide</h1>
+                <p class="subtitle">Explore the Lineage & Legacy</p>
+                <div class="collab-logos" aria-label="INSPIRE x iSMOKESHOP collaboration">
+                    <img src="inspire.png" alt="Inspire" class="collab-logo inspire-logo">
+                    <span class="collab-connector">x</span>
+                    <img src="2024 transparent smoke logo .png" alt="iSmokeShop" class="collab-logo ismokeshop-logo">
+                    <span class="collab-text">INSPIRE x iSMOKESHOP</span>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -37,9 +45,26 @@
     <!-- Main Canvas Container -->
     <div class="canvas-container" id="canvasContainer">
         <canvas id="strainCanvas"></canvas>
-        
+
         <!-- Strain Cards will be positioned absolutely -->
         <div id="strainCards"></div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <span class="legend-color indica-color"></span>
+                <span>Indica</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color sativa-color"></span>
+                <span>Sativa</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color hybrid-color"></span>
+                <span>Hybrid</span>
+            </div>
+        </div>
     </div>
 
     <!-- Strain Detail Modal -->
@@ -80,23 +105,6 @@
                     <div id="lineageInfo"></div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="legend">
-        <h3>Legend</h3>
-        <div class="legend-item">
-            <span class="legend-color indica-color"></span>
-            <span>Indica</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color sativa-color"></span>
-            <span>Sativa</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color hybrid-color"></span>
-            <span>Hybrid</span>
         </div>
     </div>
 
