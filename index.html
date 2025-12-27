@@ -46,7 +46,12 @@
         <div class="modal-content">
             <button class="modal-close" id="modalClose">✕</button>
             <div class="modal-header">
-                <img id="modalImage" src="" alt="Strain" class="modal-image">
+                <div class="modal-image-wrapper">
+                    <button class="modal-image-nav prev" id="modalImagePrev" aria-label="Previous photo">◀</button>
+                    <img id="modalImage" src="" alt="Strain" class="modal-image">
+                    <button class="modal-image-nav next" id="modalImageNext" aria-label="Next photo">▶</button>
+                    <div class="image-label" id="modalImageLabel"></div>
+                </div>
                 <div class="modal-title-section">
                     <h2 id="modalName" class="modal-name"></h2>
                     <span id="modalType" class="modal-type"></span>
