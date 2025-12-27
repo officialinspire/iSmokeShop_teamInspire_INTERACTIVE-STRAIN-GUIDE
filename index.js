@@ -9,6 +9,7 @@ const strainsData = [
         icon: "🌿",
         parents: [],
         genetics: "Chemdawg × (Lemon Thai × Pakistani Kush)",
+        varietals: "Chemdawg, Lemon Thai, Pakistani Kush",
         effects: "Euphoric, relaxed, happy, uplifted. Known for stress relief and creative thinking.",
         growing: "8-9 weeks flowering time. Medium difficulty. Thrives in controlled indoor environments.",
         funFacts: "OG Kush became legendary in the 1990s California scene. 'OG' stands for 'Ocean Grown' or 'Original Gangster' depending on who you ask! This strain has spawned countless hybrids and remains a cornerstone of modern cannabis breeding. Popular in many premium brands including Cookies, Sherbinskis, and countless others.",
@@ -24,6 +25,7 @@ const strainsData = [
         icon: "🫐",
         parents: [],
         genetics: "DJ Short's Afghani × Thai hybrid (classic Blueberry)",
+        varietals: "Afghani indica, Thai sativa",
         effects: "Relaxed, euphoric, happy, sleepy. Perfect for evening use.",
         growing: "7-9 weeks flowering. Easy to moderate. Beautiful purple hues.",
         funFacts: "Created by legendary breeder DJ Short in the 1970s-80s. Won the High Times Cannabis Cup in 2000. Its sweet berry flavor revolutionized cannabis breeding and seeded countless modern cultivars.",
@@ -40,6 +42,7 @@ const strainsData = [
         icon: "🫐",
         parents: [13, 1],
         genetics: "Blueberry × OG Kush",
+        varietals: "Blueberry family, OG Kush",
         effects: "Relaxed, euphoric, happy, sleepy with a kush backbone.",
         growing: "8-9 weeks flowering. Easy to moderate. Dense buds with berry-kush aroma.",
         funFacts: "Blueberry Kush marries DJ Short's Blueberry with the famed OG Kush, delivering sweet berry notes with kush gas. It's beloved for evening relaxation and colorful buds.",
@@ -56,6 +59,7 @@ const strainsData = [
         icon: "💙",
         parents: [13, 7],
         genetics: "Blueberry × Haze",
+        varietals: "Blueberry, Haze",
         effects: "Balanced, creative, uplifted, gentle relaxation. Perfect for daytime use.",
         growing: "9-10 weeks flowering. Easy to grow. High yields with proper care.",
         funFacts: "Blue Dream originated in California and became one of the most popular strains in the US. It's been a dispensary staple since the early 2000s and is known for its sweet berry aroma. Featured prominently by brands like Stiiizy and Raw Garden. DJ Short's Blueberry genetics made this cross legendary!",
@@ -72,6 +76,7 @@ const strainsData = [
         icon: "🍪",
         parents: [1, 8],
         genetics: "OG Kush × Durban Poison",
+        varietals: "OG Kush, Durban Poison landrace",
         effects: "Euphoric, happy, relaxed. Strong body high with cerebral effects.",
         growing: "9-10 weeks flowering. Moderate difficulty. Prefers warm climate.",
         funFacts: "GSC (now just called Cookies) was developed in the Bay Area and launched the Cookies empire by Berner. It revolutionized the cannabis industry with its distinctive minty, sweet flavor. Cookies has become one of the most recognized cannabis brands globally, with dozens of dispensaries and collaborations.",
@@ -88,6 +93,7 @@ const strainsData = [
         icon: "⛽",
         parents: [],
         genetics: "Chemdog 91 × Super Skunk (disputed origin)",
+        varietals: "Chemdog, Skunk",
         effects: "Energetic, uplifting, cerebral, focused. Great for daytime creativity.",
         growing: "10-11 weeks flowering. Moderate to difficult. Grows tall and lanky.",
         funFacts: "Sour Diesel (or 'Sour D') emerged from New York in the 1990s and became an East Coast legend. Its pungent diesel aroma is unmistakable. The strain helped define the modern cannabis market and is featured by countless brands. Some say it originated from a Grateful Dead concert parking lot!",
@@ -104,6 +110,7 @@ const strainsData = [
         icon: "🕸️",
         parents: [],
         genetics: "Brazilian Sativa × South Indian Indica",
+        varietals: "Brazilian sativa, South Indian indica",
         effects: "Energetic, euphoric, creative. Balanced high with strong potency.",
         growing: "8-9 weeks flowering. Easy to moderate. Resilient and stable.",
         funFacts: "Bred in the Netherlands in the 1990s by Green House Seeds. White Widow won the High Times Cannabis Cup in 1995 and became one of the most famous strains in Amsterdam coffee shops. The resin-covered buds look frosted with white trichomes, hence the name. Featured in countless Dutch seed banks.",
@@ -120,6 +127,7 @@ const strainsData = [
         icon: "☁️",
         parents: [],
         genetics: "Landrace Sativa blend (Mexican, Colombian, Thai, South Indian)",
+        varietals: "Mexican, Colombian, Thai, South Indian landraces",
         effects: "Highly cerebral, creative, energetic, psychedelic. Long-lasting effects.",
         growing: "10-14 weeks flowering. Difficult. Requires patience and space.",
         funFacts: "Haze strains were developed in California in the 1960s-70s by the Haze Brothers. These genetics have influenced nearly every modern sativa. Original Haze is considered the 'holy grail' of sativas. Amnesia Haze won Cannabis Cups, and variants are staples in Amsterdam coffee shops and worldwide dispensaries.",
@@ -136,6 +144,7 @@ const strainsData = [
         icon: "🌍",
         parents: [],
         genetics: "South African Landrace",
+        varietals: "South African anise-leaning landrace",
         effects: "Energetic, uplifting, creative, focused. Pure sativa experience.",
         growing: "8-9 weeks flowering. Easy to moderate. Resistant to mold and pests.",
         funFacts: "A pure South African landrace strain from Durban, brought to the US by Ed Rosenthal in the 1970s. One of the few pure sativas widely available. Known for its sweet, earthy anise flavor. Used by Cookie Fam to create Girl Scout Cookies! This strain proves that landrace genetics are irreplaceable.",
@@ -152,6 +161,7 @@ const strainsData = [
         icon: "🌌",
         parents: [],
         genetics: "Afghani × Thai",
+        varietals: "Afghani indica, Thai sativa",
         effects: "Deeply relaxing, sedating, euphoric. Perfect for insomnia and pain relief.",
         growing: "6-8 weeks flowering. Very easy. Compact and resilient.",
         funFacts: "Northern Lights is one of the most famous indicas of all time. Bred in the Pacific Northwest and popularized in Amsterdam, it shaped modern indica breeding and is featured by countless brands worldwide.",
@@ -167,6 +177,7 @@ const strainsData = [
         icon: "📜",
         parents: [7, 9],
         genetics: "Haze × (Northern Lights #5 × Shiva Skunk)",
+        varietals: "Haze, Northern Lights, Skunk",
         effects: "Energetic, clear-headed, creative. Perfect daytime strain.",
         growing: "8-9 weeks flowering. Moderate difficulty. Tall and resinous.",
         funFacts: "Named after famed cannabis activist Jack Herer, author of 'The Emperor Wears No Clothes'. This strain has won numerous awards and is beloved for its uplifting effects. Popular with brands and dispensaries worldwide.",
@@ -183,6 +194,7 @@ const strainsData = [
         icon: "🍨",
         parents: [3, 16],
         genetics: "Sunset Sherbet × Thin Mint GSC",
+        varietals: "Sherbet, Thin Mint Cookies",
         effects: "Euphoric, creative, relaxed. Balanced hybrid with dessert flavors.",
         growing: "8-9 weeks flowering. Moderate difficulty. Beautiful purple hues.",
         funFacts: "Created by Cookie Fam and Sherbinskis in the Bay Area. Gelato #33 and #41 became ultra-premium strains commanding top prices. The dessert-like flavor profile revolutionized modern breeding. Connected Cannabis Co., Raw Garden, and countless brands feature Gelato crosses. Spawned the 'dessert strain' movement!",
@@ -198,6 +210,7 @@ const strainsData = [
         icon: "💜",
         parents: [14, 15],
         genetics: "Purple Urkle × Big Bud",
+        varietals: "Purple Urkle, Big Bud",
         effects: "Deeply relaxing, sleepy, euphoric. Excellent for pain and insomnia.",
         growing: "8-11 weeks flowering. Easy to moderate. Stunning purple buds.",
         funFacts: "Bred by Ken Estes in the Bay Area in 2003. GDP became California's most famous purple strain. The grape and berry flavor combined with heavy indica effects made it legendary. Featured in countless rap songs and popular culture. Available from many brands including Papa & Barkley, Kiva, and more.",
@@ -214,6 +227,7 @@ const strainsData = [
         icon: "🍇",
         parents: [],
         genetics: "Mendocino Purps selection",
+        varietals: "Mendocino Purps",
         effects: "Relaxing, heavy, grape-forward.",
         growing: "8-9 weeks flowering. Compact with purple hues.",
         funFacts: "Purple Urkle's grape candy aroma made it a 90s favorite and a staple in purple strain lineages.",
@@ -229,6 +243,7 @@ const strainsData = [
         icon: "🌿",
         parents: [],
         genetics: "Afghani lineage selected for size",
+        varietals: "Classic Afghani",
         effects: "Relaxing, body-focused.",
         growing: "7-9 weeks flowering. Known for huge yields and heavy colas.",
         funFacts: "Big Bud was bred for commercial yields and lends its size to many modern cultivars.",
@@ -244,6 +259,7 @@ const strainsData = [
         icon: "🌇",
         parents: [3],
         genetics: "GSC phenotype with indica influence",
+        varietals: "Cookies family, indica-leaning Sherbet",
         effects: "Relaxing, euphoric, dessert-like sweetness.",
         growing: "8-9 weeks flowering. Colorful and resinous.",
         funFacts: "Sunset Sherbet (Sherbert) from Sherbinskis brings creamy dessert terps that set the stage for Gelato.",
@@ -344,26 +360,38 @@ class StrainGuide {
             }
         });
 
-        const maxPerLevel = Math.max(...Object.values(levels).map(arr => arr.length || 1));
-        const availableWidth = Math.max(this.canvasWidth - (padding * 2), 1);
-        const adjustedSpacing = maxPerLevel > 1 ? Math.min(horizontalSpacing, availableWidth / (maxPerLevel - 1)) : 0;
+        const positioned = new Map();
 
-        Object.keys(levels).forEach(level => {
-            const strains = levels[level];
-            const levelY = padding + (parseInt(level) * verticalSpacing);
-            const spacing = strains.length > 1 ? adjustedSpacing : 0;
-            const totalWidth = (strains.length - 1) * spacing;
-            const startX = Math.max(padding, (this.canvasWidth - totalWidth) / 2);
+        const getParentAnchor = (strain) => {
+            const coords = strain.parents.map(p => positioned.get(p)).filter(Boolean);
+            if (!coords.length) return padding;
+            const avg = coords.reduce((sum, coord) => sum + coord.x, 0) / coords.length;
+            return avg;
+        };
 
-            strains.forEach((strain, index) => {
+        const placeLevel = (levelIndex, strains) => {
+            const levelY = padding + (levelIndex * verticalSpacing);
+            const sorted = strains.slice().sort((a, b) => getParentAnchor(a) - getParentAnchor(b));
+            const totalWidth = (sorted.length - 1) * horizontalSpacing;
+            let currentX = Math.max(padding, (this.canvasWidth - totalWidth) / 2);
+
+            sorted.forEach(strain => {
+                const anchorX = getParentAnchor(strain);
+                const x = Math.max(anchorX, currentX);
                 this.strainPositions.push({
                     id: strain.id,
-                    x: startX + (index * spacing),
+                    x,
                     y: levelY,
                     strain
                 });
+                positioned.set(strain.id, { x, y: levelY });
+                currentX = x + horizontalSpacing;
             });
-        });
+        };
+
+        placeLevel(0, levels[0]);
+        placeLevel(1, levels[1]);
+        placeLevel(2, levels[2]);
     }
 
     getContentBounds() {
@@ -394,6 +422,7 @@ class StrainGuide {
                     <div class="strain-card-icon">${pos.strain.icon}</div>
                     <div class="strain-card-name">${pos.strain.name}</div>
                     <span class="strain-card-type">${pos.strain.type}</span>
+                    ${pos.strain.varietals ? `<div class="strain-card-varietals"><em>${pos.strain.varietals}</em></div>` : ''}
                 </div>
                 <div class="strain-card-image" aria-hidden="true">
                     <button class="card-image-nav prev" aria-label="Previous photo">◀</button>
