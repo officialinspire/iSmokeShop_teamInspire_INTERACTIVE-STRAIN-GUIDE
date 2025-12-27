@@ -308,12 +308,12 @@ class StrainGuide {
     getLayoutConfig() {
         const width = this.container.getBoundingClientRect().width;
         if (width < 720) {
-            return { padding: 140, verticalSpacing: 230, horizontalSpacing: 200 };
+            return { padding: 120, verticalSpacing: 230, horizontalSpacing: 220 };
         }
         if (width < 1040) {
-            return { padding: 170, verticalSpacing: 240, horizontalSpacing: 230 };
+            return { padding: 140, verticalSpacing: 240, horizontalSpacing: 270 };
         }
-        return { padding: 190, verticalSpacing: 250, horizontalSpacing: 250 };
+        return { padding: 150, verticalSpacing: 250, horizontalSpacing: 300 };
     }
 
     resizeCanvas() {
@@ -364,6 +364,23 @@ class StrainGuide {
                 });
             });
         });
+    }
+
+    getContentBounds() {
+        const metrics = this.getCardMetrics();
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        this.strainPositions.forEach(pos => {
+            minX = Math.min(minX, pos.x - metrics.halfWidth);
+            maxX = Math.max(maxX, pos.x + metrics.halfWidth);
+            minY = Math.min(minY, pos.y - metrics.halfHeight);
+            maxY = Math.max(maxY, pos.y + metrics.halfHeight);
+        });
+
+        return { minX, maxX, minY, maxY };
     }
 
     createStrainCards() {
@@ -601,14 +618,22 @@ class StrainGuide {
     }
 
     adjustScale(delta) {
+        const rect = this.container.getBoundingClientRect();
+        const centerPoint = { x: rect.width / 2, y: rect.height / 2 };
+        const contentPoint = this.screenToContent(centerPoint);
         const nextScale = Math.min(1.5, Math.max(0.7, this.viewScale + delta));
         this.viewScale = parseFloat(nextScale.toFixed(3));
+        this.pan = this.clampPan({
+            x: centerPoint.x - contentPoint.x * this.viewScale,
+            y: centerPoint.y - contentPoint.y * this.viewScale
+        });
         document.documentElement.style.setProperty('--card-scale', 1);
         this.updateLayerTransforms();
         this.redraw();
     }
 
     updateLayerTransforms() {
+        this.pan = this.clampPan({ ...this.pan });
         const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.viewScale})`;
         this.strainCardsContainer.style.transform = transform;
     }
@@ -695,12 +720,43 @@ class StrainGuide {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    screenToContent(point) {
+        return {
+            x: (point.x - this.pan.x) / this.viewScale,
+            y: (point.y - this.pan.y) / this.viewScale
+        };
+    }
+
     getCanvasPoint(event) {
         const rect = this.canvas.getBoundingClientRect();
-        return {
-            x: (event.clientX - rect.left - this.pan.x) / this.viewScale,
-            y: (event.clientY - rect.top - this.pan.y) / this.viewScale
-        };
+        return this.screenToContent({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    }
+
+    clampPan(pan) {
+        const bounds = this.getContentBounds();
+        const rect = this.container.getBoundingClientRect();
+        const scale = this.viewScale;
+
+        const minPanX = rect.width - bounds.maxX * scale;
+        const maxPanX = -bounds.minX * scale;
+        const minPanY = rect.height - bounds.maxY * scale;
+        const maxPanY = -bounds.minY * scale;
+
+        const clamped = { ...pan };
+
+        if (minPanX > maxPanX) {
+            clamped.x = (minPanX + maxPanX) / 2;
+        } else {
+            clamped.x = Math.min(Math.max(pan.x, minPanX), maxPanX);
+        }
+
+        if (minPanY > maxPanY) {
+            clamped.y = (minPanY + maxPanY) / 2;
+        } else {
+            clamped.y = Math.min(Math.max(pan.y, minPanY), maxPanY);
+        }
+
+        return clamped;
     }
 
     findConnectionNearPoint(point, threshold = 12) {
