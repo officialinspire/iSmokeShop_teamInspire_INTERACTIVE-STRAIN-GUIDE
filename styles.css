@@ -664,6 +664,7 @@ body {
     gap: 0.75rem;
     margin-bottom: 0.4rem;
     cursor: grab;
+    touch-action: none;
 }
 
 .legend-header:active {

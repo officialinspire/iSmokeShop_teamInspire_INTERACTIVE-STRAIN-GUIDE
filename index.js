@@ -526,6 +526,7 @@ class StrainGuide {
 
     setupCardDragging(card, pos) {
         card.addEventListener('pointerdown', (event) => {
+            if (!event.isPrimary) return;
             if (event.target.closest('.card-open, .card-toggle, .card-image-nav')) {
                 return;
             }
@@ -537,15 +538,17 @@ class StrainGuide {
             this.draggingCard = pos;
             this.cardDragPointerId = event.pointerId;
             card.classList.add('dragging');
-        });
+        }, { passive: false });
 
-        card.addEventListener('pointermove', (event) => this.handleCardDragMove(event));
+        card.addEventListener('pointermove', (event) => this.handleCardDragMove(event), { passive: false });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
             card.addEventListener(type, (event) => this.endCardDrag(event));
         });
     }
 
     handleCardDragMove(event) {
+        if (!event.isPrimary) return;
+        event.preventDefault();
         if (!this.draggingCard || event.pointerId !== this.cardDragPointerId) return;
         const pointerPoint = this.eventToContentPoint(event);
         const nextPosition = {
@@ -752,12 +755,14 @@ class StrainGuide {
     }
 
     handlePointerDown(event) {
+        if (!event.isPrimary) return;
         if (event.target.closest('.card-open, .card-toggle, .card-image-nav')) {
             return;
         }
         if (event.target.closest('.strain-card') || event.target.closest('.legend')) {
             return;
         }
+        event.preventDefault();
         this.container.setPointerCapture(event.pointerId);
         this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         if (this.activePointers.size === 1) {
@@ -770,8 +775,10 @@ class StrainGuide {
     }
 
     handlePointerMove(event) {
+        if (!event.isPrimary) return;
         if (!this.activePointers.has(event.pointerId)) return;
         this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        event.preventDefault();
 
         if (this.activePointers.size === 1) {
             const deltaX = event.clientX - this.pointerStart.x;
@@ -876,8 +883,8 @@ class StrainGuide {
             this.toggleLegend();
         });
 
-        header.addEventListener('pointerdown', (event) => this.startLegendDrag(event));
-        header.addEventListener('pointermove', (event) => this.handleLegendDrag(event));
+        header.addEventListener('pointerdown', (event) => this.startLegendDrag(event), { passive: false });
+        header.addEventListener('pointermove', (event) => this.handleLegendDrag(event), { passive: false });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
             header.addEventListener(type, (event) => this.endLegendDrag(event));
         });
@@ -890,6 +897,7 @@ class StrainGuide {
     }
 
     startLegendDrag(event) {
+        if (!event.isPrimary) return;
         if (event.target.closest('.legend-toggle')) {
             event.stopPropagation();
             return;
@@ -906,7 +914,9 @@ class StrainGuide {
     }
 
     handleLegendDrag(event) {
+        if (!event.isPrimary) return;
         if (!this.legendDragState.pointerId || event.pointerId !== this.legendDragState.pointerId) return;
+        event.preventDefault();
         const pointerPoint = this.getLegendPointer(event);
         this.setLegendPosition(pointerPoint.x - this.legendDragState.offset.x, pointerPoint.y - this.legendDragState.offset.y);
     }
