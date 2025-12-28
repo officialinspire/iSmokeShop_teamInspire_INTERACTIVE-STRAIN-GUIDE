@@ -207,8 +207,8 @@ body {
 /* Canvas Container */
 .canvas-container {
     position: relative;
-    width: min(1200px, 95%);
-    height: 820px;
+    width: min(1200px, 96vw);
+    height: clamp(560px, 72vh, 900px);
     margin: 0 auto;
     background: var(--surface);
     border-radius: 24px;
@@ -232,6 +232,7 @@ body {
     inset: 0;
     transform-origin: top left;
     will-change: transform;
+    touch-action: none;
 }
 
 .strain-card {
@@ -248,6 +249,7 @@ body {
     user-select: none;
     border: 1px solid var(--border-soft);
     transform: scale(var(--card-scale));
+    touch-action: none;
 }
 
 .strain-card.dragging {
@@ -643,8 +645,10 @@ body {
     box-shadow: 14px 14px 30px rgba(0, 0, 0, 0.12), -10px -10px 20px rgba(255, 255, 255, 0.95);
     z-index: 100;
     width: 180px;
+    max-width: 90vw;
     user-select: none;
     transition: box-shadow 0.15s ease, transform 0.15s ease;
+    touch-action: none;
 }
 
 .legend h3 {
@@ -785,7 +789,7 @@ body {
 
     .canvas-container {
         width: 96%;
-        height: 560px;
+        height: clamp(520px, 68vh, 760px);
     }
 }
 
@@ -821,13 +825,15 @@ body {
     }
 
     .canvas-container {
-        height: 520px;
+        height: clamp(480px, 70vh, 680px);
     }
 
     .legend {
-        position: static;
-        margin: 1rem auto 0;
-        width: min(320px, 90%);
+        left: 12px;
+        right: auto;
+        top: auto;
+        bottom: 12px;
+        width: min(260px, 80vw);
     }
 }
 
