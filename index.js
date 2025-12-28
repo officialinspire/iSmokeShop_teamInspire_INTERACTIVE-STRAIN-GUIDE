@@ -300,6 +300,7 @@ class StrainGuide {
         this.legendBody = this.legend?.querySelector('.legend-body') || null;
         this.legendPosition = { x: null, y: null };
         this.legendDragState = { pointerId: null, offset: { x: 0, y: 0 } };
+        this.previousSize = this.getContainerSize();
 
         this.init();
     }
@@ -347,6 +348,11 @@ class StrainGuide {
         this.canvas.height = rect.height;
         this.canvasWidth = rect.width;
         this.canvasHeight = rect.height;
+    }
+
+    getContainerSize() {
+        const rect = this.container.getBoundingClientRect();
+        return { width: rect.width || 1, height: rect.height || 1 };
     }
 
     calculateStrainPositions() {
@@ -749,6 +755,9 @@ class StrainGuide {
         if (event.target.closest('.card-open, .card-toggle, .card-image-nav')) {
             return;
         }
+        if (event.target.closest('.strain-card') || event.target.closest('.legend')) {
+            return;
+        }
         this.container.setPointerCapture(event.pointerId);
         this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         if (this.activePointers.size === 1) {
@@ -965,9 +974,14 @@ class StrainGuide {
     getInitialLegendPosition() {
         const containerRect = this.container.getBoundingClientRect();
         const legendRect = this.legend.getBoundingClientRect();
+        const padding = 16;
+        const left = legendRect.left - containerRect.left;
+        const top = legendRect.top - containerRect.top;
+        const safeLeft = Number.isFinite(left) ? left : containerRect.width - legendRect.width - padding;
+        const safeTop = Number.isFinite(top) ? top : padding;
         return {
-            left: legendRect.left - containerRect.left,
-            top: legendRect.top - containerRect.top
+            left: Math.max(padding, Math.min(safeLeft, containerRect.width - legendRect.width - padding)),
+            top: Math.max(padding, Math.min(safeTop, containerRect.height - legendRect.height - padding))
         };
     }
 
@@ -1021,14 +1035,35 @@ class StrainGuide {
     }
 
     handleResize() {
-        this.calculateStrainPositions();
-        this.createStrainCards();
-        this.clearHighlights();
+        const prevSize = this.previousSize || this.getContainerSize();
+        this.resizeCanvas();
+        const newSize = this.getContainerSize();
+        const widthRatio = newSize.width / prevSize.width;
+        const heightRatio = newSize.height / prevSize.height;
+
+        if (!this.strainPositions || !this.strainPositions.length) {
+            this.calculateStrainPositions();
+            this.createStrainCards();
+        } else {
+            this.strainPositions.forEach(pos => {
+                pos.x *= widthRatio;
+                pos.y *= heightRatio;
+                this.updateCardPosition(pos.element, pos);
+            });
+        }
+
+        this.pan = this.clampPan({ x: this.pan.x * widthRatio, y: this.pan.y * heightRatio });
+
+        if (this.legendPosition.x !== null && this.legendPosition.y !== null) {
+            this.setLegendPosition(this.legendPosition.x * widthRatio, this.legendPosition.y * heightRatio);
+        } else {
+            const { left, top } = this.getInitialLegendPosition();
+            this.setLegendPosition(left, top);
+        }
+
+        this.previousSize = newSize;
         this.updateLayerTransforms();
         this.redraw();
-        if (this.legendPosition.x !== null && this.legendPosition.y !== null) {
-            this.setLegendPosition(this.legendPosition.x, this.legendPosition.y);
-        }
     }
 
     handleSearch(e) {
