@@ -138,12 +138,6 @@ body {
     color: var(--text-primary);
 }
 
-.collab-text {
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: var(--text-primary);
-}
-
 /* Controls */
 .controls {
     display: flex;
@@ -254,6 +248,12 @@ body {
     user-select: none;
     border: 1px solid var(--border-soft);
     transform: scale(var(--card-scale));
+}
+
+.strain-card.dragging {
+    cursor: grabbing;
+    transition: none;
+    box-shadow: 16px 16px 30px rgba(0, 0, 0, 0.18), -12px -12px 24px rgba(255, 255, 255, 0.9);
 }
 
 .strain-card.collapsed .strain-card-image {
@@ -643,12 +643,59 @@ body {
     box-shadow: 14px 14px 30px rgba(0, 0, 0, 0.12), -10px -10px 20px rgba(255, 255, 255, 0.95);
     z-index: 100;
     width: 180px;
+    user-select: none;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .legend h3 {
     font-size: 1.05rem;
     margin-bottom: 0.85rem;
     color: var(--text-primary);
+}
+
+.legend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+    cursor: grab;
+}
+
+.legend-header:active {
+    cursor: grabbing;
+}
+
+.legend-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.legend-toggle {
+    border: 1px solid var(--border-soft);
+    background: var(--surface-strong);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 0.25rem 0.55rem;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: var(--shadow-light);
+}
+
+.legend-toggle:hover {
+    background: var(--surface);
+}
+
+.legend-hint {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.legend-body {
+    display: flex;
+    flex-direction: column;
 }
 
 .legend-item {
@@ -658,6 +705,18 @@ body {
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
     color: var(--text-secondary);
+}
+
+.legend.collapsed .legend-body {
+    display: none;
+}
+
+.legend.collapsed .legend-toggle {
+    transform: rotate(-90deg);
+}
+
+.legend.dragging {
+    box-shadow: 10px 10px 26px rgba(0, 0, 0, 0.16), -8px -8px 18px rgba(255, 255, 255, 0.9);
 }
 
 .legend-color {

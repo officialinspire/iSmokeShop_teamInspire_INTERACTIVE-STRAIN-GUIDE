@@ -292,6 +292,14 @@ class StrainGuide {
         this.lastPinchDistance = null;
         this.panAnchor = { x: 0, y: 0 };
         this.pointerStart = { x: 0, y: 0 };
+        this.draggingCard = null;
+        this.cardDragPointerId = null;
+        this.cardDragOffset = { x: 0, y: 0 };
+        this.legend = document.getElementById('legend');
+        this.legendToggle = this.legend?.querySelector('.legend-toggle') || null;
+        this.legendBody = this.legend?.querySelector('.legend-body') || null;
+        this.legendPosition = { x: null, y: null };
+        this.legendDragState = { pointerId: null, offset: { x: 0, y: 0 } };
 
         this.init();
     }
@@ -301,6 +309,7 @@ class StrainGuide {
         this.createStrainCards();
         this.drawConnections();
         this.setupEventListeners();
+        this.setupLegendControls();
         window.addEventListener('resize', () => this.handleResize());
     }
 
@@ -449,6 +458,7 @@ class StrainGuide {
             card.addEventListener('mouseenter', () => this.highlightByStrain(pos.strain.id));
             card.addEventListener('mouseleave', () => this.clearHighlights());
             this.setupCardGallery(card, pos.strain);
+            this.setupCardDragging(card, pos);
 
             this.strainCardsContainer.appendChild(card);
             pos.element = card;
@@ -506,6 +516,49 @@ class StrainGuide {
         });
 
         updateImage(0);
+    }
+
+    setupCardDragging(card, pos) {
+        card.addEventListener('pointerdown', (event) => {
+            if (event.target.closest('.card-open, .card-toggle, .card-image-nav')) {
+                return;
+            }
+            event.stopPropagation();
+            event.preventDefault();
+            card.setPointerCapture(event.pointerId);
+            const pointerPoint = this.eventToContentPoint(event);
+            this.cardDragOffset = { x: pointerPoint.x - pos.x, y: pointerPoint.y - pos.y };
+            this.draggingCard = pos;
+            this.cardDragPointerId = event.pointerId;
+            card.classList.add('dragging');
+        });
+
+        card.addEventListener('pointermove', (event) => this.handleCardDragMove(event));
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
+            card.addEventListener(type, (event) => this.endCardDrag(event));
+        });
+    }
+
+    handleCardDragMove(event) {
+        if (!this.draggingCard || event.pointerId !== this.cardDragPointerId) return;
+        const pointerPoint = this.eventToContentPoint(event);
+        this.draggingCard.x = pointerPoint.x - this.cardDragOffset.x;
+        this.draggingCard.y = pointerPoint.y - this.cardDragOffset.y;
+        this.updateCardPosition(this.draggingCard.element, this.draggingCard);
+        this.drawConnections();
+    }
+
+    endCardDrag(event) {
+        if (!this.draggingCard || event.pointerId !== this.cardDragPointerId) return;
+        if (this.draggingCard.element.hasPointerCapture(event.pointerId)) {
+            this.draggingCard.element.releasePointerCapture(event.pointerId);
+        }
+        this.draggingCard.element.classList.remove('dragging');
+        this.draggingCard = null;
+        this.cardDragPointerId = null;
+        this.pan = this.clampPan(this.pan);
+        this.updateLayerTransforms();
+        this.drawConnections();
     }
 
     updateCardPosition(card, pos) {
@@ -756,6 +809,14 @@ class StrainGuide {
         };
     }
 
+    eventToContentPoint(event) {
+        const rect = this.container.getBoundingClientRect();
+        return this.screenToContent({
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        });
+    }
+
     getCanvasPoint(event) {
         const rect = this.canvas.getBoundingClientRect();
         return this.screenToContent({ x: event.clientX - rect.left, y: event.clientY - rect.top });
@@ -786,6 +847,102 @@ class StrainGuide {
         }
 
         return clamped;
+    }
+
+    setupLegendControls() {
+        if (!this.legend || !this.legendToggle || !this.legendBody) return;
+        const header = this.legend.querySelector('.legend-header');
+        if (!header) return;
+
+        const { left, top } = this.getInitialLegendPosition();
+        this.setLegendPosition(left, top);
+
+        this.legendToggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.toggleLegend();
+        });
+
+        header.addEventListener('pointerdown', (event) => this.startLegendDrag(event));
+        header.addEventListener('pointermove', (event) => this.handleLegendDrag(event));
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
+            header.addEventListener(type, (event) => this.endLegendDrag(event));
+        });
+    }
+
+    toggleLegend() {
+        const isCollapsed = this.legend.classList.toggle('collapsed');
+        this.legendToggle.setAttribute('aria-expanded', (!isCollapsed).toString());
+        this.legendToggle.textContent = isCollapsed ? '▸' : '▾';
+    }
+
+    startLegendDrag(event) {
+        if (event.target.closest('.legend-toggle')) {
+            event.stopPropagation();
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        this.legend.setPointerCapture(event.pointerId);
+        const pointerPoint = this.getLegendPointer(event);
+        this.legendDragState = {
+            pointerId: event.pointerId,
+            offset: { x: pointerPoint.x - this.legendPosition.x, y: pointerPoint.y - this.legendPosition.y }
+        };
+        this.legend.classList.add('dragging');
+    }
+
+    handleLegendDrag(event) {
+        if (!this.legendDragState.pointerId || event.pointerId !== this.legendDragState.pointerId) return;
+        const pointerPoint = this.getLegendPointer(event);
+        this.setLegendPosition(pointerPoint.x - this.legendDragState.offset.x, pointerPoint.y - this.legendDragState.offset.y);
+    }
+
+    endLegendDrag(event) {
+        if (!this.legendDragState.pointerId || event.pointerId !== this.legendDragState.pointerId) return;
+        if (this.legend.hasPointerCapture(event.pointerId)) {
+            this.legend.releasePointerCapture(event.pointerId);
+        }
+        this.legendDragState = { pointerId: null, offset: { x: 0, y: 0 } };
+        this.legend.classList.remove('dragging');
+    }
+
+    getLegendPointer(event) {
+        const rect = this.container.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+
+    setLegendPosition(x, y) {
+        const clamped = this.clampLegendPosition(x, y);
+        this.legend.style.left = `${clamped.x}px`;
+        this.legend.style.top = `${clamped.y}px`;
+        this.legend.style.right = 'auto';
+        this.legendPosition = clamped;
+    }
+
+    clampLegendPosition(x, y) {
+        const containerRect = this.container.getBoundingClientRect();
+        const legendRect = this.legend.getBoundingClientRect();
+        const padding = 8;
+
+        const maxX = containerRect.width - legendRect.width - padding;
+        const maxY = containerRect.height - legendRect.height - padding;
+
+        return {
+            x: Math.min(Math.max(x, padding), Math.max(maxX, padding)),
+            y: Math.min(Math.max(y, padding), Math.max(maxY, padding))
+        };
+    }
+
+    getInitialLegendPosition() {
+        const containerRect = this.container.getBoundingClientRect();
+        const legendRect = this.legend.getBoundingClientRect();
+        return {
+            left: legendRect.left - containerRect.left,
+            top: legendRect.top - containerRect.top
+        };
     }
 
     findConnectionNearPoint(point, threshold = 12) {
@@ -832,6 +989,9 @@ class StrainGuide {
         this.clearHighlights();
         this.updateLayerTransforms();
         this.redraw();
+        if (this.legendPosition.x !== null && this.legendPosition.y !== null) {
+            this.setLegendPosition(this.legendPosition.x, this.legendPosition.y);
+        }
     }
 
     handleResize() {
@@ -840,6 +1000,9 @@ class StrainGuide {
         this.clearHighlights();
         this.updateLayerTransforms();
         this.redraw();
+        if (this.legendPosition.x !== null && this.legendPosition.y !== null) {
+            this.setLegendPosition(this.legendPosition.x, this.legendPosition.y);
+        }
     }
 
     handleSearch(e) {
