@@ -542,8 +542,13 @@ class StrainGuide {
     handleCardDragMove(event) {
         if (!this.draggingCard || event.pointerId !== this.cardDragPointerId) return;
         const pointerPoint = this.eventToContentPoint(event);
-        this.draggingCard.x = pointerPoint.x - this.cardDragOffset.x;
-        this.draggingCard.y = pointerPoint.y - this.cardDragOffset.y;
+        const nextPosition = {
+            x: pointerPoint.x - this.cardDragOffset.x,
+            y: pointerPoint.y - this.cardDragOffset.y
+        };
+        const clamped = this.clampCardPosition(nextPosition);
+        this.draggingCard.x = clamped.x;
+        this.draggingCard.y = clamped.y;
         this.updateCardPosition(this.draggingCard.element, this.draggingCard);
         this.drawConnections();
     }
@@ -933,6 +938,27 @@ class StrainGuide {
         return {
             x: Math.min(Math.max(x, padding), Math.max(maxX, padding)),
             y: Math.min(Math.max(y, padding), Math.max(maxY, padding))
+        };
+    }
+
+    clampCardPosition(pos) {
+        const metrics = this.getCardMetrics();
+        const bounds = this.getVisibleContentBounds();
+        return {
+            x: Math.min(Math.max(pos.x, bounds.minX + metrics.halfWidth), bounds.maxX - metrics.halfWidth),
+            y: Math.min(Math.max(pos.y, bounds.minY + metrics.halfHeight), bounds.maxY - metrics.halfHeight)
+        };
+    }
+
+    getVisibleContentBounds() {
+        const rect = this.container.getBoundingClientRect();
+        const topLeft = this.screenToContent({ x: 0, y: 0 });
+        const bottomRight = this.screenToContent({ x: rect.width, y: rect.height });
+        return {
+            minX: Math.min(topLeft.x, bottomRight.x),
+            maxX: Math.max(topLeft.x, bottomRight.x),
+            minY: Math.min(topLeft.y, bottomRight.y),
+            maxY: Math.max(topLeft.y, bottomRight.y)
         };
     }
 
